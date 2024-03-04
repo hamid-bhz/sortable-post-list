@@ -1,53 +1,44 @@
-name: Deploy ViteJS React TypeScript with GitHub Pages
+name: Deploy  to Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches:
-      - main
+    branches: ['main']
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
 
 jobs:
-  # Build job
-  build:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'
-
+          node-version: 18
+          cache: 'npm'
       - name: Install dependencies
         run: npm install
-
-      - name: Build project
+      - name: Build
         run: npm run build
-
-      - name: Archive build artifacts
-        uses: actions/upload-artifact@v2
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
         with:
-          name: build
-          path: dist # Change this to your build output directory if different
-
-  # Deployment job
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: build
-          path: dist # Change this to your build output directory if different
-
+          path: './dist'
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@4.1.4 # Use a GitHub Pages deploy action
-        with:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }} # GitHub token with access to your repository
-          BRANCH: gh-pages # Branch to deploy to
-          FOLDER: dist # Folder where your build artifacts are located
+        id: deployment
+        uses: actions/deploy-pages@v2
