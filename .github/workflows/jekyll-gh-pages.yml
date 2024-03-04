@@ -1,0 +1,53 @@
+name: Deploy ViteJS React TypeScript with GitHub Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches:
+      - main
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: dist # Change this to your build output directory if different
+
+  # Deployment job
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: dist # Change this to your build output directory if different
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.4 # Use a GitHub Pages deploy action
+        with:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }} # GitHub token with access to your repository
+          BRANCH: gh-pages # Branch to deploy to
+          FOLDER: dist # Folder where your build artifacts are located
