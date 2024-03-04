@@ -1,6 +1,7 @@
 import {FC} from 'react'
 import {useAutoAnimate} from '@formkit/auto-animate/react'
 
+import {Spinner} from '@icons'
 import {Posts} from '@types'
 import {Post} from '../Post'
 
@@ -16,16 +17,20 @@ export const PostList: FC<Props> = ({posts, handleMove}) => {
 		<div>
 			<header className="mb-3 text-xl text-white">Sortable Post List</header>
 			<ul ref={animationParent}>
-				{posts?.map((post, index) => (
-					<Post
-						key={post.id}
-						isDown={index < posts.length - 1}
-						isUp={index > 0}
-						id={post.id}
-						index={index}
-						onMove={handleMove}
-					/>
-				))}
+				{Boolean(posts && posts.length) ? (
+					posts?.map((post, index) => (
+						<Post
+							key={post.id}
+							isDown={index < posts.length - 1}
+							isUp={index > 0}
+							id={post.id}
+							index={index}
+							onMove={handleMove}
+						/>
+					))
+				) : (
+					<Spinner />
+				)}
 			</ul>
 		</div>
 	)
